@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>未发送的星轨 - 二课活动项目</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #0a0a1a;
+            color: #e0e0ff;
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 10px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 5px);
+            background-size: 75px 75px, 50px 50px;
+            background-position: 0 0, 37.5px 37.5px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* 导航栏 */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 26, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(94, 94, 240, 0.3);
+        }
+        
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #7c9afa;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: #a3b8ff;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: #c0d0ff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #7c9afa;
+        }
+        
+        /* 各部分通用样式 */
+        section {
+            min-height: 100vh;
+            padding: 100px 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            color: #a3b8ff;
+            margin-bottom: 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .section-title:after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #7c9afa, transparent);
+            margin: 15px auto;
+        }
+        
+        /* 页首部分 */
+        #hero {
+            text-align: center;
+            padding-top: 150px;
+        }
+        
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #7c9afa, #c0d0ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 5px 15px rgba(94, 94, 240, 0.4);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: #c0d0ff;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            font-weight: 300;
+        }
+        
+        .hero-quote {
+            font-style: italic;
+            color: #a3b8ff;
+            border-left: 3px solid #7c9afa;
+            padding-left: 20px;
+            max-width: 600px;
+            margin: 30px auto;
+            text-align: left;
+        }
+        
+        .scroll-down {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #7c9afa;
+            font-size: 1.5rem;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0) translateX(-50%);}
+            40% {transform: translateY(-20px) translateX(-50%);}
+            60% {transform: translateY(-10px) translateX(-50%);}
+        }
+        
+        /* 观测站部分 */
+        #observatory {
+            background: rgba(16, 16, 40, 0.7);
+            backdrop-filter: blur(5px);
+            border-top: 1px solid rgba(94, 94, 240, 0.2);
+            border-bottom: 1px solid rgba(94, 94, 240, 0.2);
+        }
+        
+        .content-box {
+            background: rgba(20, 20, 40, 0.6);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(94, 94, 240, 0.2);
+        }
+        
+        /* 计算轨迹部分 */
+        #calculations .variables {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin: 40px 0;
+        }
+        
+        .variable {
+            background: rgba(20, 20, 40, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            width: 200px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(94, 94, 240, 0.2);
+        }
+        
+        .variable h3 {
+            color: #7c9afa;
+            margin-bottom: 10px;
+        }
+        
+        /* 信号尝试部分 */
+        #attempts .chat-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: rgba(30, 30, 60, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .chat-message {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 80%;
+            animation: fadeIn 1s;
+        }
+        
+        .him {
+            background: rgba(94, 94, 240, 0.2);
+            border-left: 3px solid #7c9afa;
+            margin-right: auto;
+        }
+        
+        .her {
+            background: rgba(240, 94, 240, 0.2);
+            border-right: 3px solid #f09af0;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        /* 最终方程部分 */
+        #final-equation {
+            text-align: center;
+        }
+        
+        .equation {
+            font-family: 'Courier New', monospace;
+            font-size: 1.8rem;
+            color: #a3b8ff;
+            background: rgba(20, 20, 40, 0.6);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 40px auto;
+            max-width: 800px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(94, 94, 240, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .equation:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(124, 154, 250, 0.1), transparent);
+            animation: shine 5s infinite linear;
+        }
+        
+        @keyframes shine {
+            0% {transform: translateX(-100%);}
+            100% {transform: translateX(100%);}
+        }
+        
+        /* 页尾部分 */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            background: rgba(10, 10, 20, 0.9);
+            border-top: 1px solid rgba(94, 94, 240, 0.2);
+        }
+        
+        .footer-text {
+            color: #a3b8ff;
+            font-size: 0.9rem;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .variables {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .variable {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .nav-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav>
+        <div class="container nav-content">
+            <a href="#" class="logo"><i class="fas fa-star"></i> 未发送的星轨</a>
+            <div class="nav-links">
+                <a href="#observatory">观测站</a>
+                <a href="#calculations">计算轨迹</a>
+                <a href="#attempts">信号尝试</a>
+                <a href="#final-equation">最终方程</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页首 -->
+    <section id="hero">
+        <div class="container">
+            <h1 class="hero-title">未发送的星轨</h1>
+            <p class="hero-subtitle">一次关于距离、幻想与告白的自我解剖实验</p>
+            <blockquote class="hero-quote">
+                "我们之间最近的距离，是银河的宽度，也是心念的刹那。"
+            </blockquote>
+            <a href="#observatory" class="scroll-down">
+                <i class="fas fa-chevron-down"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- 观测站部分 -->
+    <section id="observatory">
+        <div class="container">
+            <h2 class="section-title">发现了一颗星</h2>
+            <div class="content-box">
+                <p>高三的除夕，世界很安静。我的世界里突然闯入了一个清晰的坐标。她不像太阳那般灼目，而是像一颗运行在独特轨道上的星星，带着一种让我好奇的频率。</p>
+                <p>我知道，她的引力场很强，而我只是一颗微小的、轨迹凌乱的小行星。每一次靠近的尝试都需要精密的计算，任何微小的失误都可能导致轨道的彻底偏离。</p>
+            </div>
+            <div class="content-box">
+                <p>在那些日子里，我成为了一个专注的观测者。记录她的轨迹，分析她的光谱，尝试理解这颗遥远星体的运行规律。但所有的观测都隔着遥远的真空，我始终找不到合适的借口进入她的轨道。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 计算轨迹部分 -->
+    <section id="calculations">
+        <div class="container">
+            <h2 class="section-title">无法交汇的轨道</h2>
+            <div class="content-box">
+                <p>我开始收集数据，计算一切可能的交汇点。但每一个计算结果都显示着相同的答案：不可能。</p>
+            </div>
+            
+            <div class="variables">
+                <div class="variable">
+                    <h3>变量1：班级</h3>
+                    <p>平行</p>
+                </div>
+                <div class="variable">
+                    <h3>变量2：成绩</h3>
+                    <p>光年遥远</p>
+                </div>
+                <div class="variable">
+                    <h3>变量3：未来坐标</h3>
+                    <p>西安-杭州</p>
+                </div>
+                <div class="variable">
+                    <h3>计算结果</h3>
+                    <p>接近零概率</p>
+                </div>
+            </div>
+            
+            <div class="content-box">
+                <p>于是，我的每一次尝试靠近，都成了一次危险的变轨。我害怕的不是被拒绝，而是怕我的莽撞，会扰乱她宁静的运行，最终让我们双双坠入冰冷的虚无。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 信号尝试部分 -->
+    <section id="attempts">
+        <div class="container">
+            <h2 class="section-title">笨拙的讯号</h2>
+            <div class="content-box">
+                <p>我发射过许多次微弱的信号。那些"很奇怪很奇怪的理由"，是我能想到的、最不像故意搭讪的搭讪。是的，我很笨拙。在我的模型里，任何的"刻意"都会让这本就脆弱的系统瞬间崩溃。</p>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-message him">
+                    <p>你好，请问...你知道寒假作业最后一题怎么做吗？</p>
+                </div>
+                <div class="chat-message her">
+                    <p>？我们是一个班的吗</p>
+                </div>
+                <div class="chat-message him">
+                    <p>不是...我3班的，听说你数学很好</p>
+                </div>
+                <div class="chat-message her">
+                    <p>哦，那题选C</p>
+                </div>
+                <div class="chat-message him">
+                    <p>谢谢！...对了，除夕快乐！</p>
+                </div>
+            </div>
+            
+            <div class="content-box">
+                <p>我最大的冒险，是在除夕夜发送了那条请求。那是一次思想的决堤，是无数次模拟演练后唯一的一次实战。但结果，只是再次验证了我的计算——我们运行在不同的轨道上。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 最终方程部分 -->
+    <section id="final-equation">
+        <div class="container">
+            <h2 class="section-title">七夕定理</h2>
+            <div class="content-box">
+                <p>她问："为什么不加我？"</p>
+                <p>我所有的计算、所有的恐惧、所有的幻想，在这一刻坍缩成一个唯一的解。</p>
+            </div>
+            
+            <div class="equation">
+                "加一个人什么时候都可以，而一段缘分不是什么时候都能断的。"
+            </div>
+            
+            <div class="content-box">
+                <p>这是我的答案。一个用"珍视"来伪装"恐惧"的答案。我选择让这段关系永远停留在理论阶段，成为我心中一个完美的不可能定理。</p>
+                <p>这样，它就永远不会被证伪，永远不会被距离和现实磨灭。她将永远是我算法中，那个最优美、最无解的方程。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页尾 -->
+    <footer>
+        <div class="container">
+            <p class="footer-text">一个自我和解的项目 | 二课活动展示</p>
+            <p class="footer-text">© 2023 未发送的星轨 - 所有故事均基于真实情感体验</p>
+        </div>
+    </footer>
+
+    <script>
+        // 滚动平滑效果
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // 滚动时导航栏效果
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.style.background = 'rgba(10, 10, 26, 0.95)';
+                nav.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
+            } else {
+                nav.style.background = 'rgba(10, 10, 26, 0.9)';
+                nav.style.boxShadow = 'none';
+            }
+        });
+
+        // 渐入动画
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.content-box, .variable, .equation').forEach(el => {
+            el.style.opacity = 0;
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
